@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>My Hat Collection</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    h1 { text-align: center; }
+    .hat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
+    }
+    .hat-card {
+      border: 1px solid #ccc;
+      padding: 15px;
+      border-radius: 8px;
+      background: #fafafa;
+    }
+    .hat-card img {
+      max-width: 100%;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+  <h1>My Hat Collection</h1>
+  <div id="hatGrid" class="hat-grid"></div>
+
+  <script>
+    const sheetURL =
+      "https://docs.google.com/spreadsheets/d/e/2PACX-1vRMmQHmTBOEN2tlzCLaC2QXgQovOy4HFTlNe-VIAsh0B-ryUcV-nujXuGkRVpCtKCaJXdnqQoS0TG7N/pubhtml";
+
+    fetch(sheetURL)
+      .then(res => res.text())
+      .then(html => {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, "text/html");
+
+        const rows = [...doc.querySelectorAll("table tbody tr")];
+
+        const grid = document.getElementById("hatGrid");
+
+        rows.forEach(row => {
+          const cells = [...row.querySelectorAll("td")].map(td => td.innerText.trim());
+
+          // Adjust based on your sheet columns:
+          const [name, description, imageURL] = cells;
+
+          const card = document.createElement("div");
+          card.className = "hat-card";
+
+          card.innerHTML = `
+            <h3>${name}</h3>
+            <p>${description}</p>
+            ${imageURL ? `<img src="${imageURL}" alt="${name}">` : ""}
+          `;
+
+          grid.appendChild(card);
+        });
+      });
+  </script>
+</body>
+</html>
