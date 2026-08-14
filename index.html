@@ -1,64 +1,44 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>My Hat Collection</title>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    h1 { text-align: center; }
-    .hat-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-      gap: 20px;
-    }
-    .hat-card {
-      border: 1px solid #ccc;
-      padding: 15px;
-      border-radius: 8px;
-      background: #fafafa;
-    }
-    .hat-card img {
-      max-width: 100%;
-      border-radius: 6px;
-    }
-  </style>
-</head>
-<body>
-  <h1>My Hat Collection</h1>
-  <div id="hatGrid" class="hat-grid"></div>
+<script>
+  const sheetURL =
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vRMmQHmTBOEN2tlzCLaC2QXgQovOy4HFTlNe-VIAsh0B-ryUcV-nujXuGkRVpCtKCaJXdnqQoS0TG7N/pubhtml";
 
-  <script>
-    const sheetURL =
-      "https://docs.google.com/spreadsheets/d/e/2PACX-1vRMmQHmTBOEN2tlzCLaC2QXgQovOy4HFTlNe-VIAsh0B-ryUcV-nujXuGkRVpCtKCaJXdnqQoS0TG7N/pubhtml";
+  fetch(sheetURL)
+    .then(res => res.text())
+    .then(html => {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, "text/html");
 
-    fetch(sheetURL)
-      .then(res => res.text())
-      .then(html => {
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, "text/html");
+      // Google Sheets uses <table class="waffle">
+      const table = doc.querySelector("table.waffle");
 
-        const rows = [...doc.querySelectorAll("table tbody tr")];
+      if (!table) {
+        console.error("No table found in published sheet.");
+        return;
+      }
 
-        const grid = document.getElementById("hatGrid");
+      const rows = [...table.querySelectorAll("tr")];
 
-        rows.forEach(row => {
-          const cells = [...row.querySelectorAll("td")].map(td => td.innerText.trim());
+      // Skip header row (row 0)
+      const dataRows = rows.slice(1);
 
-          // Adjust based on your sheet columns:
-          const [name, description, imageURL] = cells;
+      const grid = document.getElementById("hatGrid");
 
-          const card = document.createElement("div");
-          card.className = "hat-card";
+      dataRows.forEach(row => {
+        const cells = [...row.querySelectorAll("td")].map(td => td.innerText.trim());
 
-          card.innerHTML = `
-            <h3>${name}</h3>
-            <p>${description}</p>
-            ${imageURL ? `<img src="${imageURL}" alt="${name}">` : ""}
-          `;
+        // Adjust based on your sheet columns:
+        const [name, description, imageURL] = cells;
 
-          grid.appendChild(card);
-        });
+        const card = document.createElement("div");
+        card.className = "hat-card";
+
+        card.innerHTML = `
+          <h3>${name}</h3>
+          <p>${description}</p>
+          ${imageURL ? `<img src="${imageURL}" alt="${name}">` : ""}
+        `;
+
+        grid.appendChild(card);
       });
-  </script>
-</body>
-</html>
+    });
+</script>
